@@ -1,0 +1,3 @@
+[submodule "dist/client"]
+	path = dist/client
+	url = https://github.com/incedo-mob-prabhashkumar/triton.git
