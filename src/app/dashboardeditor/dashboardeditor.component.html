@@ -1,0 +1,158 @@
+<div class="container-fluid editor-container">
+  <div class='row removemargin'>
+    <div class="col-md-2 editor-partion-left">
+      <div class="row logo">
+        <mat-toolbar color="dark" class='tool-left-editor'>
+          <img class="" [ngClass]="{'img-head-editor':true}" src="../assets/logo-triton.png" />
+        </mat-toolbar>
+      </div>
+      <!-- widgets -->
+      <mat-toolbar color="dark" class='tool-left-editor'>
+        <img src="../assets/tline.png" />
+        <span class='widgets-flex app-font'>WIDGETS</span>
+        <i class='glyphicon glyphicon-menu-down' *ngIf="!(showWidget)" (click)="openWidget()"></i>
+        <i class='glyphicon glyphicon-menu-up' *ngIf="showWidget" (click)="hideWidget()"></i>
+        
+      </mat-toolbar>
+      <h6 class="widget-title" *ngIf="!showWidget" >Drag and drop the required widgets</h6>
+      <div class="draggable-widget-charts ">
+        <mat-grid-list class="widget-list" cols="4" rowHeight="1:1" gutterSize="20px" [ngClass]="{'hidden-widget':showWidget}">
+          <mat-grid-tile *ngFor="let data of dataWidgets" [colspan]="data.cols" [rowspan]="data.rows" [ngStyle]="{'background':''}"
+            dnd-draggable [dragEnabled]="true" [dragData]="data">
+
+
+            <div class="">
+              <!-- <div>{{data.text}}</div> -->
+              <img [src]="data.path" class="widget-image-style"/>
+            </div>
+
+          </mat-grid-tile>
+        </mat-grid-list>
+
+      </div>
+      <!-- properties -->
+      <mat-toolbar color="dark" class='tool-left-editor prop-top-buffer'>
+        <img src="../assets/tline.png" />
+        <span class='widgets-flex app-font'>PROPERTIES</span>
+        <i class='glyphicon glyphicon-menu-down' *ngIf="!(showProp)" (click)="openProp()"></i>
+        <i class='glyphicon glyphicon-menu-up' *ngIf="showProp" (click)="hideProp()"></i>
+      </mat-toolbar>
+      <div class="draggable-widget-charts-prop">
+        <div [ngClass]="{'hidden-prop':showProp}">
+          <!-- title -->
+            <div class='row removemargin rowpadding'>
+                <div class="col-md-4 aligntoselect">
+                  <span>Title</span>
+                </div>
+                <div class="col-md-4 " (click)="isGridSelected($event)">
+                    <input [disabled]="disableProp" placeholder="" [(ngModel)]="selectedTitle.title" (keyup)=titleChange(selectedTitle.title) maxlength="50" (keypress)="omit_special_char($event)"  > 
+                </div>
+              </div>
+          <!-- group -->
+          <div class='row removemargin rowpadding'>
+            <div class="col-md-4 aligntoselect">
+              <span>Group</span>
+            </div>
+            <div class="col-md-4 ">
+              <mat-select [disabled]="disableProp"  multiple [(ngModel)]="selectedGroups" (change)="onSelectedGroup($event.value)" (click)="isGridSelected($event)">
+                <mat-option *ngFor="let group of Groups" [value]="group.OUTPUT_COL_NAME">{{group.OUTPUT_COL_NAME}}</mat-option>
+              </mat-select>
+            </div>
+          </div>
+          <!-- dimentions -->
+          <div class='row removemargin rowpadding'>
+            <div class="col-md-4 aligntoselect">
+              <span>Dimension</span>
+            </div>
+            <div class="col-md-4">
+              <mat-select [disabled]="disableProp"  multiple [(ngModel)]="selectedDimentions" (change)="onSelectedDimentions($event.value)" (click)="isGridSelected($event)">
+                <mat-option *ngFor="let dim of Dimentions" [value]="dim.OUTPUT_COL_NAME">{{dim.OUTPUT_COL_NAME}}</mat-option>
+              </mat-select>
+            </div>
+          </div>
+          
+          <!-- stab coloums -->
+          <div class='row removemargin rowpadding' *ngIf="selectedGridReference && selectedGridReference.type=='stab'">
+            <div class="col-md-4 aligntoselect">
+              <span>Stab Columns</span>
+            </div>
+            <div class="col-md-4">
+              <mat-select [disabled]="disableProp"  multiple [(ngModel)]="selectedStab" (change)="onSelectedStab($event.value)" (click)="isGridSelected($event)">
+                <mat-option *ngFor="let stab of StabColumns" [value]="stab.OUTPUT_COL_NAME">{{stab.OUTPUT_COL_NAME}}</mat-option>
+              </mat-select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- right pannel -->
+    <div class="col-md-10 editor-partion-right">
+
+      <mat-toolbar color="dark" class="tool-right-editor">
+
+        <div class='row removemargin'>
+
+          <div class='col-md-8'><span class="app-font-dbname">{{dashboardName}}</span></div>
+          <div>
+              
+            <div class='col-md-1'><button mat-button class="background-primary-color-cancel white-text roundedCornerBtn" (click)="openDialog()">Add </button></div>
+            <div class='col-md-1'><button mat-button class="background-primary-color-cancel white-text roundedCornerBtn" (click)="closedashboard()">Close</button></div>
+            <div class='col-md-1'><button [disabled]="pageList.length==0"  mat-button class="background-primary-color-cancel white-text roundedCornerBtn" (click)="preview()">Preview</button></div>
+            <div class='col-md-1' *ngIf="!showSpinner"><button [disabled]="pageList.length==0"  mat-button class="background-primary-color white-text roundedCornerBtn" (click)="publish()">Publish</button></div>
+            <div class='col-md-1' *ngIf="showSpinner"> <progress-spinner></progress-spinner>  </div>
+          </div>
+        </div>
+      </mat-toolbar>
+      <!-- add page -->
+      <!--<mat-toolbar color="dark" class="tool-right-editor">
+     
+     <div class='row removemargin'>
+
+     
+
+     </div>
+   </mat-toolbar> -->
+      <mat-tab-group [(selectedIndex)]="selectedIndexValue" dynamicHeight=true class="tabs-section"  (selectChange)="clearSelection()">
+        <mat-tab label={{page.pageId}} *ngFor="let page of pageList;let i = index">
+          <template mat-tab-label>
+            Page {{page.index}}
+            <span *ngIf="selectedIndexValue==i" class="delbtn" (click)="deletePage(i)"></span>
+          </template>
+          <div class="draggable-widget-charts">
+            <mat-grid-list cols="6" rowHeight="4:3" gutterSize="20px">
+              <mat-grid-tile *ngFor="let data of page.grid" [colspan]="data.sizeX" [rowspan]="data.sizeY" [ngStyle]="{'background':'#2f363b'}"
+                class='page-grid-common' (click)="loadProp($event,data)" dnd-droppable (onDropSuccess)="transferDataSuccess($event,data)">
+                <!-- {{data.type}} -->
+              
+                
+                  <!-- <div class="panel-heading">Place to drop {{data.type}}</div> -->
+                <div class="content-area">
+                  <div class="content-title">
+                    <h6><b>{{data.title}}</b></h6>
+                  </div>
+                  <div class="content-body">
+                    <img  *ngIf="data.type=='bar'" src="../assets/color_bar.png" class="image-width "/>
+                    <img  *ngIf="data.type=='pie'" src="../assets/color_pie.png" class="image-width "/>
+                    <img  *ngIf="data.type=='stackbar'" src="../assets/color_stack.png" class="image-width "/>
+                    <img *ngIf="data.type=='line'" src="../assets/color_line.png" class="image-width "/>
+                    <img  *ngIf="data.type=='stab'" src="../assets/color_table.png" class="image-width "/>
+                  </div>
+                </div>
+                    <!--<div *ngIf="dataAfterDrag.text=='Pie'">pie was dropped here</div>
+                <div *ngIf="dataAfterDrag.text=='Table'">table was dropped here</div>
+                <div *ngIf="dataAfterDrag.text=='Line'">line was dropped here</div>
+                <div *ngIf="dataAfterDrag.text=='Bar'">bar was dropped here</div>
+                <div *ngIf="dataAfterDrag.text=='Stack'">stack was dropped here</div>-->
+                 
+                
+              </mat-grid-tile>
+            </mat-grid-list>
+
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+
+
+    </div>
+  </div>
+</div>
